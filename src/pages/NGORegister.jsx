@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Eye, EyeOff, Mail, Lock, User, Building, Upload, Info, Phone } from 'lucide-react';
 import { toast } from 'sonner';
@@ -9,6 +9,7 @@ import { auth, db } from "../config/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import NavBar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { serverTimestamp } from "firebase/firestore";
 
 const NGORegister = () => {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ const NGORegister = () => {
   const [description, setDescription] = useState('');
   const [regNumber, setRegNumber] = useState('');
   const [document, setDocument] = useState(null);
+  const fileInputRef = useRef(null);
 
   const [errors, setErrors] = useState({
     orgName: '',
@@ -115,61 +117,97 @@ const NGORegister = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (validateForm()) {
-      setIsSubmitting(true);
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);   
-        const user = userCredential.user;
 
-        // await setDoc(doc(db, "users", user.uid), {
-        //   uid: user.uid,
-        //   name: name,
-        //   role: "user",
-        //   createdAt: new Date(),
-        // });
-        
-        setSuccessDialogOpen(true);
-        
-        setOrgName('');
-        setContactName('');
-        setEmail('');
-        setPhone('');
-        setPassword('');
-        setConfirmPassword('');
-        setDescription('');
-        setRegNumber('');
-        setDocument(null);
-        
-        toast.success("Registration submitted successfully!");
-      } 
-      catch (error) {
-        toast.error('Registration failed. Please try again.');
-        console.error('NGO Registration error:', error);
-      } 
-      finally {
-        setIsSubmitting(false);
-      }
+    if (!validateForm()) {
+      return;
     }
-  };
 
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (file.size > 5 * 1024 * 1024) {
+    if (document.size > 5 * 1024 * 1024) {
         setErrors({
           ...errors,
           document: 'File size should not exceed 5MB'
         });
         return;
-      }
-      
-      setDocument(file);
-      setErrors({
+    }
+
+    setErrors({
         ...errors,
         document: ''
-      });
+    });
+    
+    setIsSubmitting(true);
+    try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);   
+    const user = userCredential.user;
+
+    const uploadedUrl = await handleFileChange();
+
+    await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: orgName,
+        role: "ngo",
+        description: description,
+        regNum: regNumber,
+        contactPerson: contactName,
+        contactNo: phone,
+        createdAt: serverTimestamp(),
+        approvalStatus: "pending",
+        docProofURL: uploadedUrl || "",
+    });
+    
+    setSuccessDialogOpen(true);
+    
+    setOrgName('');
+    setContactName('');
+    setEmail('');
+    setPhone('');
+    setPassword('');
+    setConfirmPassword('');
+    setDescription('');
+    setRegNumber('');
+    setDocument(null);
+    if (fileInputRef.current) {
+        fileInputRef.current.value = '';
     }
+    
+    toast.success("Registration submitted successfully!");
+    } 
+    catch (error) {
+        toast.error('Registration failed. Please try again.');
+        console.error('NGO Registration error:', error);
+    } 
+    finally {
+        setIsSubmitting(false);
+    }
+    
+  };
+
+  const handleFileChange = async () => {
+    if (!document) return; 
+
+    const formData = new FormData();
+    formData.append("file", document);
+    formData.append("upload_preset", "clear-view-preset"); 
+    formData.append("cloud_name", import.meta.env.VITE_CLOUDINARY_CLOUD_NAME); 
+
+    try {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: formData,
+        });
+
+        const data = await response.json();
+        console.log("Cloudinary response:", data.secure_url, data.url, data);
+        toast.success("Image uploaded successfully!");
+        return data.secure_url;
+    } 
+    catch (err) {
+        console.error("Cloudinary upload error:", err);
+        toast.error("Failed to upload image.");
+        return null;
+    }
+      
+    
   };
 
   return (
@@ -181,7 +219,7 @@ const NGORegister = () => {
         <div className="py-12 px-6 md:px-12 flex justify-center items-center min-h-[80vh]">
             <div className="w-full max-w-3xl bg-white rounded-xl shadow-md overflow-hidden">
                 <div className="text-center p-6 border-b">
-                <h2 className="text-2xl font-bold text-ecochain-green-600">Register as an Organization/NGO</h2>
+                <h2 className="text-2xl font-bold text-[#556B2F]">Register as an Organization/NGO</h2>
                 {/* <p className="text-sm text-gray-500 mt-2">Join Clear View to collaborate on environmental initiatives</p> */}
                 </div>
                 <div className="p-6">
@@ -197,7 +235,7 @@ const NGORegister = () => {
                             id="orgName"
                             type="text"
                             placeholder="Organization Name"
-                            className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ecochain-green-500 focus:border-ecochain-green-500"
+                            className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#6B8E23] focus:border-[#6B8E23]"
                             value={orgName}
                             onChange={(e) => setOrgName(e.target.value)}
                         />
@@ -217,7 +255,7 @@ const NGORegister = () => {
                             id="contactName"
                             type="text"
                             placeholder="Contact Person's Name"
-                            className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ecochain-green-500 focus:border-ecochain-green-500"
+                            className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#6B8E23] focus:border-[#6B8E23]"
                             value={contactName}
                             onChange={(e) => setContactName(e.target.value)}
                         />
@@ -239,7 +277,7 @@ const NGORegister = () => {
                             id="email"
                             type="email"
                             placeholder="organization@example.com"
-                            className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ecochain-green-500 focus:border-ecochain-green-500"
+                            className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#6B8E23] focus:border-[#6B8E23]"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
@@ -259,7 +297,7 @@ const NGORegister = () => {
                             id="phone"
                             type="tel"
                             placeholder="Phone Number"
-                            className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ecochain-green-500 focus:border-ecochain-green-500"
+                            className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#6B8E23] focus:border-[#6B8E23]"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                         />
@@ -277,7 +315,7 @@ const NGORegister = () => {
                     <textarea
                         id="description"
                         placeholder="Brief description of your organization's mission and activities"
-                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ecochain-green-500 focus:border-ecochain-green-500"
+                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#6B8E23] focus:border-[#6B8E23]"
                         rows={3}
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
@@ -295,7 +333,7 @@ const NGORegister = () => {
                             id="regNumber"
                             type="text"
                             placeholder="Registration Number"
-                            className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ecochain-green-500 focus:border-ecochain-green-500"
+                            className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#6B8E23] focus:border-[#6B8E23]"
                             value={regNumber}
                             onChange={(e) => setRegNumber(e.target.value)}
                         />
@@ -324,7 +362,8 @@ const NGORegister = () => {
                             type="file"
                             accept=".pdf,.jpg,.jpeg,.png"
                             className="hidden"
-                            onChange={handleFileChange}
+                            ref={fileInputRef}
+                            onChange={(e) => setDocument(e.target.files[0])}
                         />
                         </div>
                         <p className="text-xs text-gray-500">Max file size: 5MB</p>
@@ -345,7 +384,7 @@ const NGORegister = () => {
                             id="password"
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
-                            className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ecochain-green-500 focus:border-ecochain-green-500"
+                            className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#6B8E23] focus:border-[#6B8E23]"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
@@ -376,7 +415,7 @@ const NGORegister = () => {
                             id="confirmPassword"
                             type={showConfirmPassword ? "text" : "password"}
                             placeholder="••••••••"
-                            className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ecochain-green-500 focus:border-ecochain-green-500"
+                            className="pl-10 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#6B8E23] focus:border-[#6B8E23]"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                         />
@@ -401,7 +440,7 @@ const NGORegister = () => {
                     <div className="pt-4">
                     <button
                         type="submit"
-                        className="w-full p-3 bg-ecochain-green-500 hover:bg-ecochain-green-600 text-white rounded-md transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                        className="w-full p-3 bg-[#6B8E23] hover:bg-[#556B2F] text-white rounded-md transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                         disabled={isSubmitting}
                     >
                         {isSubmitting ? (
@@ -422,7 +461,7 @@ const NGORegister = () => {
                 <div className="p-6 border-t text-center">
                 <div className="text-sm">
                     Already have an account?{' '}
-                    <Link to="/login" className="font-medium text-ecochain-green-500 hover:text-ecochain-green-600 transition-colors">
+                    <Link to="/login" className="font-medium text-[#6B8E23] hover:text-[#556B2F] transition-colors">
                     Sign in
                     </Link>
                 </div>
@@ -430,7 +469,7 @@ const NGORegister = () => {
             </div>
 
             <AlertDialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
-                <AlertDialogContent>
+                <AlertDialogContent className="bg-white">
                 <AlertDialogHeader>
                     <AlertDialogTitle className="text-xl text-center">Application Submitted</AlertDialogTitle>
                     <AlertDialogDescription className="text-center">
@@ -451,7 +490,7 @@ const NGORegister = () => {
                 </AlertDialogHeader>
                 <div className="flex justify-center mt-4">
                     <Link to="/login">
-                    <button className="px-4 py-2 bg-ecochain-green-500 hover:bg-ecochain-green-600 text-white rounded-md transition-colors">
+                    <button className="px-4 py-2 bg-[#6B8E23] hover:bg-[#556B2F] text-white rounded-md transition-colors">
                         Return to Login
                     </button>
                     </Link>

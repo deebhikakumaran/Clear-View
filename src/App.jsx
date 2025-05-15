@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import './App.css'
 import { Routes, Route, BrowserRouter } from 'react-router';
 
 import Home from './pages/Home'
@@ -9,6 +8,7 @@ import NGORegister from './pages/NGORegister'
 import UserDashboard from './pages/UserDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import Report from './pages/Report'
+import NGOInvite from './pages/NGOInvite'
 // import MapView from './pages/MapView'
 // import Leaderboard from './pages/Leaderboard'
 import NotFound from './pages/NotFound'
@@ -27,6 +27,7 @@ function App() {
           <Route path="/user-dashboard/:id" element={<UserDashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/report" element={<Report />} />
+          <Route path="/ngo-invite" element={<NGOInvite />} />
           {/* <Route path="/map-view" element={<MapView />} /> */}
           {/* <Route path="/leaderboard" element={<Leaderboard />} /> */}
           <Route path="*" element={<NotFound />} />

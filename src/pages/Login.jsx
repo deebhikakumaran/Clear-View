@@ -7,6 +7,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import NavBar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { onAuthStateChanged } from "firebase/auth";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -51,34 +52,45 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (validateForm()) {
-      setIsSubmitting(true);
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
 
-        const user = auth.currentUser;
-        const docSnap = await getDoc(doc(db, "users", user.uid));
+    console.log('Form submitted:');
 
-        if (docSnap.exists()) {
-          const userData = docSnap.data();
-          const role = userData.role;
-
-          if (role === "user") {
-            navigate(`/user-dashboard/${user.uid}`);
-          } 
-          else {
-            navigate('/admin');
-          }
-        }
-      } 
-      catch (error) {
-        console.error('Login error:', error);
-      } 
-      finally {
-        setIsSubmitting(false);
-      }
+    if (!validateForm()) {
+      return;
     }
+
+    console.log('Form is valid, proceeding with login...');
+    
+    setIsSubmitting(true);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+      console.log('User signed in:', userCredential.user);
+
+      const user = userCredential.user;
+      const docSnap = await getDoc(doc(db, "users", user.uid));
+
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        const role = userData.role;
+
+        console.log('User role:', role);
+
+        if (role !== "admin") {
+          navigate(`/user-dashboard/${user.uid}`);
+        } 
+        else {
+          navigate('/admin');
+        }
+      }
+    } 
+    catch (error) {
+      console.error('Login error:', error);
+    } 
+    finally {
+      setIsSubmitting(false);
+    }
+    
   };
 
   const togglePasswordVisibility = () => {

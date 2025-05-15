@@ -6,6 +6,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import RegisterTypeDialog from "./RegisterTypeDialog";
 import { Button } from './ui/button';
 import { div } from '@tensorflow/tfjs';
+import { onAuthStateChanged } from "firebase/auth";
 
 function Navbar() {
   
@@ -31,6 +32,10 @@ function Navbar() {
             setUser({ id: userDoc.id, ...userDoc.data() });
             setIsAdmin(true);
           } 
+          else if (userDoc.exists() && userDoc.data().role === "ngo") {
+            setUser({ id: userDoc.id, ...userDoc.data() }); 
+            setIsAdmin(false);
+          }
           else {
             setUser({ id: userDoc.id, ...userDoc.data() });
             setIsAdmin(false);
@@ -138,16 +143,28 @@ function Navbar() {
                 isActive("/map-view") ? "text-[#6B8E23] font-semibold" : ""
               }`}
             >
-              Map View
+              Map
             </Link>
-            <Link
-              to="/report"
-              className={`hover:text-[#F2FCE2] transition-colors ${
-                isActive("/report") ? "text-[#6B8E23] font-semibold" : ""
-              }`}
-            >
-              Report
-            </Link>
+            {!isAdmin && (
+              <Link
+                to="/report"
+                className={`hover:text-[#F2FCE2] transition-colors ${
+                  isActive("/report") ? "text-[#6B8E23] font-semibold" : ""
+                }`}
+              >
+                Report
+              </Link>
+            )}
+            {isAuthenticated && isAdmin && (
+              <Link
+                to="/ngo-invite"
+                className={`hover:text-[#F2FCE2] transition-colors ${
+                  isActive("/ngo-invite") ? "text-[#6B8E23] font-semibold" : ""
+                }`}
+              >
+                NGO Invite
+              </Link>
+            )}
 
             {isAuthenticated && (
               <Link

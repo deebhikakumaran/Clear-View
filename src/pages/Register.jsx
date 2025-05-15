@@ -87,7 +87,7 @@ const Register = () => {
           role: "user",
           createdAt: new Date(),
         });
-        navigate('/login');
+        navigate(`user-dashboard/${user.uid}`);
       } 
       catch (error) {
         console.error('Registration error:', error);
