@@ -111,3 +111,9 @@ export const submitReport = (reportData) => {
   reports.push(newReport);
   return newReport;
 };
+
+export const getLeaderboard = () => {
+  const reports = getAllReports();
+
+  return reports
+};

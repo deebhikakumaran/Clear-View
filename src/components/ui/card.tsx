@@ -1,14 +1,20 @@
 import * as React from "react"
 import cn from "classnames"
 
-const Card = React.forwardRef(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className || ""}`}
-    {...props}
-  />
-));
+const Card = React.forwardRef(({ className, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className || ""}`}
+      {...props}
+    />
+  );
+});
+
 Card.displayName = "Card";
+
+
+
 
 const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
   <div
