@@ -1,13 +1,17 @@
 import { Link } from 'react-router';
 import NavBar from '../components/Navbar';
 import Footer from '../components/Footer';
+import RegisterTypeDialog from '../components/RegisterTypeDialog';
+import { useState } from 'react';
 
 const Home = () => {
+  const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
+  
   return (
 
     <div className="flex flex-col min-h-screen">
       <NavBar />
-
+      
       <main className="flex-grow">
         <div className="flex flex-col min-h-screen">
             <section className="bg-[#F2FCE2] rounded-b-3xl px-6 py-16 md:py-24">
@@ -25,12 +29,10 @@ const Home = () => {
                         Join us in creating a sustainable world through simple, impactful actions for a cleaner, healthier planet.
                     </p>
                     <div className="flex flex-wrap gap-4 pt-4">
-                        <Link to="/register">
-                        <button className="eco-button-primary">
+                        <button className="eco-button-primary" onClick={() => setRegisterDialogOpen(true)}>
                             Join Now
                         </button>
-                        </Link>
-                        <Link to="/map">
+                        <Link to="/map-view">
                         <button variant="outline" className="eco-button-secondary">
                             Explore More
                         </button>
@@ -165,19 +167,23 @@ const Home = () => {
                     Join our community of environmental tracking and reporting pollution across India
                 </p>
                 <div className="flex flex-wrap justify-center gap-4">
-                    <Link to="/register">
-                    <button className="bg-[#6B8E23] hover:bg-[#556B2F] text-white font-semibold py-3 px-8 rounded-full text-lg">
+                    <button className="bg-[#6B8E23] hover:bg-[#556B2F] text-white font-semibold py-3 px-8 rounded-full text-lg" 
+                            onClick={() => setRegisterDialogOpen(true)}>
                         Create Account
                     </button>
-                    </Link>
                     <Link to="/report">
-                    <button variant="outline" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-[#1A1F2C] font-semibold py-3 px-8 rounded-full text-lg transition-colors">
-                        Report Pollution
-                    </button>
+                        <button variant="outline" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-[#1A1F2C] font-semibold py-3 px-8 rounded-full text-lg transition-colors">
+                            Report Pollution
+                        </button>
                     </Link>
                 </div>
                 </div>
             </section>
+
+            <RegisterTypeDialog 
+                isOpen={registerDialogOpen}
+                onOpenChange={setRegisterDialogOpen}
+            />
         </div>
       </main>
 
