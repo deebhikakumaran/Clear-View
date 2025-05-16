@@ -28,6 +28,51 @@ export const getNewNGOInvites = async () => {
   return newNGOs;
 };
 
+export const getLeaderboard = async () => {
+  const reportsSnapshot = await getDocs(collection(db, "reports"));
+
+  const userReportCount = {};
+
+  reportsSnapshot.forEach((doc) => {
+    const report = doc.data();
+    if (report.status === "approved" && report.user_id && report.user_id !== "anonymous") {
+      if (userReportCount[report.user_id]) {
+        userReportCount[report.user_id]++;
+      } 
+      else {
+        userReportCount[report.user_id] = 1;
+      }
+    }
+  });
+
+  console.log(userReportCount,  "user-report count")
+
+  const leaderboard = [];
+
+  for (const userId in userReportCount) {
+    console.log(userId)
+    
+    const userDoc = await getDoc(doc(db, "users", userId));
+
+    if (!userDoc.exists()) {
+      console.warn(`User not found in Firestore: ${userId}`);
+    }
+
+    leaderboard.push({
+      name: userDoc.data().name,
+      points: userDoc.data().points,
+      count: userReportCount[userId],
+      userId,
+    });
+  }
+
+  leaderboard.sort((a, b) => b.points - a.points);
+
+  console.log("Leaderboard before sending to :", leaderboard);
+
+  return leaderboard;
+};
+
 export const getAllReports = async () => {
   const querySnapshot = await getDocs(collection(db, "reports"));
 
@@ -40,23 +85,23 @@ export const getAllReports = async () => {
 };
 
 
-export const updateReportStatus = async (reportId, newStatus) => {
-  const reportRef = doc(db, "reports", reportId);
+// export const updateReportStatus = async (reportId, newStatus) => {
+//   const reportRef = doc(db, "reports", reportId);
 
-  try {
-    await updateDoc(reportRef, {
-      status: newStatus,
-    });
-    console.log(`Report ${reportId} status updated to ${newStatus}`);
-    toast.success(`Report status updated to ${newStatus}`);
-    return true;
-  } 
-  catch (error) {
-    console.error("Error updating report status:", error);
-    toast.error("Error updating report status.");
-    return null;
-  }
-};
+//   try {
+//     await updateDoc(reportRef, {
+//       status: newStatus,
+//     });
+//     console.log(`Report ${reportId} status updated to ${newStatus}`);
+//     toast.success(`Report status updated to ${newStatus}`);
+//     return true;
+//   } 
+//   catch (error) {
+//     console.error("Error updating report status:", error);
+//     toast.error("Error updating report status.");
+//     return null;
+//   }
+// };
 
 
 export const incidentTypes = [
@@ -112,8 +157,3 @@ export const submitReport = (reportData) => {
   return newReport;
 };
 
-export const getLeaderboard = () => {
-  const reports = getAllReports();
-
-  return reports
-};

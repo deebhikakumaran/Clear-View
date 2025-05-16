@@ -1,30 +1,61 @@
 
 import { useEffect, useState } from 'react';
 import { Card } from '../components/ui/card';
-import { getLeaderboard } from '../utils/services';
+import { db, auth } from "../config/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { getLeaderboard } from "../utils/services";
+import { toast } from "sonner";
+import { onAuthStateChanged } from "firebase/auth";
+import { useNavigate } from 'react-router';
+import NavBar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const Leaderboard = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const [leaderboardData, setLeaderboardData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+      const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+        if (currentUser) {
+          try {
+            const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+            if (!userDoc.exists()) {
+              navigate("/login");
+            } 
+            else {
+              setUser({ id: userDoc.id, ...userDoc.data() });
+          }
+          } 
+          catch (error) {
+            console.error("Error checking admin role:", error);
+          }
+        }
+      });
+  
+      return () => unsubscribe();
+  }, [navigate]);
+
+  const loadLeaderboard = async () => {
+
+    try {
+      const leaderboardData = await getLeaderboard();
+      setLeaderboardData(leaderboardData);
+      console.log("Leaderboard Data:", leaderboardData);
+    } 
+    catch (error) {
+      console.error("Error loading leaderboard:", error);
+      toast.error("Failed to load leaderboard");
+    } 
+    finally {
+      setLoading(false);
+    }
+    
+  };
   
   useEffect(() => {
-    const data = getLeaderboard();
-    
-    // Add some dummy data if leaderboard is empty
-    if (data.length < 3) {
-      const dummyData = [
-        { name: 'EcoWarrior', count: 24 },
-        { name: 'GreenGuardian', count: 19 },
-        { name: 'PlanetProtector', count: 16 },
-        { name: 'EarthDefender', count: 14 },
-        { name: 'NatureNinja', count: 12 },
-      ];
-      
-      // Merge real data with dummy data and sort
-      const combinedData = [...data, ...dummyData.filter(d => !data.some(entry => entry.name === d.name))];
-      setLeaderboardData(combinedData.sort((a, b) => b.count - a.count).slice(0, 10));
-    } else {
-      setLeaderboardData(data);
-    }
+    loadLeaderboard();
   }, []);
   
   const getUserRank = () => {
@@ -50,13 +81,12 @@ const Leaderboard = () => {
             <div className="text-center mb-12">
               <h1 className="text-3xl md:text-4xl font-bold mb-4">Community Leaderboard</h1>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                See who's leading the charge in environmental reporting. More reports means more impact for our planet.
+                See who's leading the charge in environmental reporting
               </p>
             </div>
             
-            {/* User's Position Card (if logged in) */}
             {user && userRank && (
-              <Card className="mb-10 p-8 bg-gradient-to-r from-ecochain-green-500 to-ecochain-accent text-white">
+              <Card className="mb-10 p-8 bg-gradient-to-r from-[#6B8E23] to-[#8DAA53] text-white">
                 <div className="flex flex-col md:flex-row items-center justify-between">
                   <div className="flex items-center mb-4 md:mb-0">
                     <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mr-6">
@@ -75,7 +105,6 @@ const Leaderboard = () => {
               </Card>
             )}
             
-            {/* Leaderboard Table */}
             <Card>
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -83,7 +112,7 @@ const Leaderboard = () => {
                     <tr className="border-b">
                       <th className="px-6 py-4 text-left font-bold">Rank</th>
                       <th className="px-6 py-4 text-left font-bold">User</th>
-                      <th className="px-6 py-4 text-center font-bold">Reports</th>
+                      <th className="px-6 py-4 text-center font-bold">Points</th>
                       <th className="px-6 py-4 text-center font-bold">Impact Score</th>
                     </tr>
                   </thead>
@@ -91,7 +120,7 @@ const Leaderboard = () => {
                     {leaderboardData.map((entry, index) => (
                       <tr 
                         key={index} 
-                        className={`border-b ${user && entry.name === user.name ? 'bg-ecochain-green-100' : ''}`}
+                        className={`border-b ${user && entry.name === user.name ? 'bg-[#F8FAEF]' : ''}`}
                       >
                         <td className="px-6 py-4">
                           {index < 3 ? (
@@ -109,22 +138,54 @@ const Leaderboard = () => {
                         <td className="px-6 py-4 font-medium">
                           {entry.name}
                           {user && entry.name === user.name && (
-                            <span className="ml-2 text-xs bg-ecochain-green-500 text-white px-2 py-0.5 rounded-full">
+                            <span className="ml-2 text-xs bg-[#6B8E23] text-white px-2 py-0.5 rounded-full">
                               You
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-center font-medium">{entry.count}</td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-6 py-4 text-center font-medium">{entry.points}</td>
+                        {/* <td className="px-6 py-4 text-center">
                           <div className="w-full bg-gray-200 rounded-full h-2.5">
                             <div 
-                              className="bg-ecochain-green-500 h-2.5 rounded-full" 
+                              className="bg-[#6B8E23] h-2.5 rounded-full" 
                               style={{ 
-                                width: `${Math.min(100, (entry.count / leaderboardData[0].count) * 100)}%` 
+                                width: `${Math.min(100, (entry.points / leaderboardData[0].points) * 100)}%` 
                               }}
                             ></div>
                           </div>
+                        </td> */}
+
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex justify-center items-center">
+                            <div className="relative w-12 h-12">
+                              <svg className="transform -rotate-90" viewBox="0 0 36 36">
+                                <path
+                                  className="text-gray-300"
+                                  d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                />
+                                <path
+                                  className="text-[#6B8E23]"
+                                  d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                  strokeDasharray={`${Math.min(100, (entry.points / leaderboardData[0].points) * 100)}, 100`}
+                                />
+                              </svg>
+                              <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-700">
+                                {Math.round((entry.points / leaderboardData[0].points) * 100)}%
+                              </div>
+                            </div>
+                          </div>
                         </td>
+
                       </tr>
                     ))}
                     

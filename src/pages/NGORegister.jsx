@@ -153,6 +153,7 @@ const NGORegister = () => {
         createdAt: serverTimestamp(),
         approvalStatus: "pending",
         docProofURL: uploadedUrl || "",
+        points: 0,
     });
     
     setSuccessDialogOpen(true);

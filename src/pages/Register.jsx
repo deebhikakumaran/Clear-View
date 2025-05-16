@@ -86,6 +86,7 @@ const Register = () => {
           name: name,
           role: "user",
           createdAt: new Date(),
+          points: 0,
         });
         navigate(`user-dashboard/${user.uid}`);
       } 

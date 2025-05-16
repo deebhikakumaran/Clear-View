@@ -172,6 +172,7 @@ const Report = () => {
         location: reportLocation,
         user_id: auth?.currentUser?.uid ?? "anonymous",
         timestamp: serverTimestamp(),
+        status: "pending",
       };
 
       await addDoc(collection(db, "reports"), reportData);

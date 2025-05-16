@@ -11,11 +11,10 @@ import Report from './pages/Report'
 import NGOInvite from './pages/NGOInvite'
 import MapView from './pages/MapView'
 import Map from './pages/Map'
-// import Leaderboard from './pages/Leaderboard'
+import Leaderboard from './pages/Leaderboard'
 import NotFound from './pages/NotFound'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
@@ -30,7 +29,7 @@ function App() {
           <Route path="/report" element={<Report />} />
           <Route path="/ngo-invite" element={<NGOInvite />} />
           <Route path="/map-view" element={<MapView />} />
-          {/* <Route path="/leaderboard" element={<Leaderboard />} /> */}
+          <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

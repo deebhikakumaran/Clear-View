@@ -83,6 +83,22 @@ const AdminDashboard = () => {
     }
   };
 
+  const updateUserPoints = async (userId, points) => {
+    const userRef = doc(db, "users", userId);
+
+    try {
+      await updateDoc(userRef, {
+        points: points,
+      });
+      return true;
+    } 
+    catch (error) {
+      console.error("Error updating user points:", error);
+      toast.error("Error updating user points.");
+      return null;
+    }
+  };
+
   const updateReportStatus = async (reportId, newStatus) => {
     const reportRef = doc(db, "reports", reportId);
   
@@ -90,7 +106,16 @@ const AdminDashboard = () => {
       await updateDoc(reportRef, {
         status: newStatus,
       });
-      console.log(`Report ${reportId} status updated to ${newStatus}`);
+
+      const reportSnap = await getDoc(reportRef);
+
+      if (reportSnap.exists() && reportSnap.data()?.uid !== "anonymous") {
+        const updatedUser = await updateUserPoints(reportSnap.data().uid, 10);
+        if (updatedUser) {
+          toast.success("User points is updated");
+        }
+      } 
+
       toast.success(`Report status updated to ${newStatus}`);
       return true;
     } 
@@ -218,12 +243,12 @@ const AdminDashboard = () => {
                       pendingReports.map((report) => (
                         <TableRow key={report.id}>
                           <TableCell className="font-medium">{report.type}</TableCell>
-                          <TableCell>[{report.location.latitude.toFixed(4)}°{report.location.latitude > 0 ? 'N' : 'S'}, {report.location.longitude.toFixed(4)}°{report.location.longitude > 0 ? 'E' : 'W'}]</TableCell>
+                          <TableCell>{report.location.latitude.toFixed(4)}°{report.location.latitude > 0 ? 'N' : 'S'}, {report.location.longitude.toFixed(4)}°{report.location.longitude > 0 ? 'E' : 'W'}</TableCell>
                           <TableCell>{report.user_id}</TableCell>
                           <TableCell>{new Date(report.timestamp.seconds * 1000).toLocaleDateString()}</TableCell>
                           <TableCell>
                             <Badge className={getStatusColor(report.status)}>
-                              {report.status}
+                              {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
                             </Badge>
                           </TableCell>
                           <TableCell>
