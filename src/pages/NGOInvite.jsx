@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 import { Button } from "../components/ui/button";
 import { toast } from "sonner";
 import { auth, db } from "../config/firebase";
@@ -158,6 +158,7 @@ function NGOInvite() {
                                 <TableHead>Contact Number</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Actions</TableHead>
+                                <TableHead>View Doc</TableHead>
                             </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -179,12 +180,13 @@ function NGOInvite() {
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" size="icon">
-                                                <MoreHorizontal className="h-4 w-4" />
+                                                {/* <MoreHorizontal className="h-4 w-4" /> */}
+                                                Change Status
                                                 <span className="sr-only">Open menu</span>
                                             </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                            {/* <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                             <DropdownMenuItem className="cursor-pointer" 
                                                     onClick={() => getNGObyId(ngo.id)
                                                     .then((ngoDetails) => { console.log(ngoDetails) })}> 
@@ -192,7 +194,7 @@ function NGOInvite() {
                                                 View details
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                                            <DropdownMenuLabel>Change Status</DropdownMenuLabel> */}
                                             <DropdownMenuItem 
                                                 onClick={() => changeStatus(ngo.id, 'approved')}
                                                 className="cursor-pointer"
@@ -210,6 +212,15 @@ function NGOInvite() {
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
+                                    <TableCell>
+                                        <Link
+                                            to={`${ngo.docProofURL}`}
+                                            className={`hover:text-[#F2FCE2] transition-colors`}
+                                            >
+                                            <Button>Document</Button>
+                                        </Link>
+                                    </TableCell>
+                                    
                                 </TableRow>
                                 ))
                             ) : (

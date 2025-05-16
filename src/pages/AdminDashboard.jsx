@@ -15,12 +15,17 @@ import { MoreHorizontal, Eye, CheckCircle, XCircle } from 'lucide-react';
 import { onAuthStateChanged } from "firebase/auth";
 import NavBar from '../components/Navbar';
 import Footer from '../components/Footer';
+import ReportDetailDialog from '../components/ReportDetailDialog';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [pendingReports, setPendingReports] = useState([]);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -86,11 +91,16 @@ const AdminDashboard = () => {
   const updateUserPoints = async (userId, points) => {
     const userRef = doc(db, "users", userId);
 
+    console.log('Before updating user points', userId)
+
     try {
       await updateDoc(userRef, {
         points: points,
       });
+
+      console.log('User points updated')
       return true;
+      
     } 
     catch (error) {
       console.error("Error updating user points:", error);
@@ -107,15 +117,32 @@ const AdminDashboard = () => {
         status: newStatus,
       });
 
+      console.log('Updated status.......')
+
+
       const reportSnap = await getDoc(reportRef);
 
-      if (reportSnap.exists() && reportSnap.data()?.uid !== "anonymous") {
-        const updatedUser = await updateUserPoints(reportSnap.data().uid, 10);
+      console.log('reportSNAP', reportSnap)
+
+      if (reportSnap.exists() && reportSnap.data()?.user_id !== "anonymous") {
+        const userId = reportSnap.data().user_id;
+        const isPhotoUpload = reportSnap.data().photo_url;
+
+        let updatedUser = ""
+
+        if(isPhotoUpload){
+          updatedUser = await updateUserPoints(userId, 20);
+        }
+        else{
+          updatedUser = await updateUserPoints(userId, 10);
+        }
+        
         if (updatedUser) {
+          console.log('USER POINTS UPDATED')
           toast.success("User points is updated");
         }
       } 
-
+      
       toast.success(`Report status updated to ${newStatus}`);
       return true;
     } 
@@ -127,11 +154,13 @@ const AdminDashboard = () => {
   };
 
   const changeStatus = async (reportId, newStatus) => {
+    console.log('Changing.......')
     const updatedReport = await updateReportStatus(reportId, newStatus);
     if (updatedReport) {
       loadReports();
     }
   };
+
 
   const countsByStatus = reports.reduce((acc, report) => {
     acc[report.status] = (acc[report.status] || 0) + 1;
@@ -236,6 +265,7 @@ const AdminDashboard = () => {
                       <TableHead>Date</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
+                      <TableHead>View Report</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -255,34 +285,13 @@ const AdminDashboard = () => {
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon">
-                                  <MoreHorizontal className="h-4 w-4" />
+                                  {/* <MoreHorizontal className="h-4 w-4" /> */}
+                                  Change Status
                                   <span className="sr-only">Open menu</span>
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem className="cursor-pointer" 
-                                        onClick={() => getReportById(report.id)
-                                        .then((reportDetails) => { console.log(reportDetails) })}> 
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  View details
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                                {/* <DropdownMenuItem 
-                                  onClick={() => changeStatus(report.id, 'Verified')}
-                                  className="cursor-pointer"
-                                >
-                                  <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                                  Mark as Verified
-                                </DropdownMenuItem> */}
-                                {/* <DropdownMenuItem 
-                                  onClick={() => changeStatus(report.id, 'Under Review')}
-                                  className="cursor-pointer"
-                                >
-                                  <Eye className="mr-2 h-4 w-4 text-yellow-600" />
-                                  Set to Under Review
-                                </DropdownMenuItem> */}
+                                {/* <DropdownMenuLabel>Change Status</DropdownMenuLabel> */}
                                 <DropdownMenuItem 
                                   onClick={() => changeStatus(report.id, 'approved')}
                                   className="cursor-pointer"
@@ -299,6 +308,9 @@ const AdminDashboard = () => {
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
+                          </TableCell>
+                          <TableCell>                     
+                            <ReportDetailDialog report={report} />
                           </TableCell>
                         </TableRow>
                       ))

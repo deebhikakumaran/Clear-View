@@ -28,7 +28,7 @@ function Footer() {
             </div>
             <div className="pt-6">
               <p className="text-gray-300 hover:text-white">
-                &copy; {new Date().getFullYear()} Ecochain
+                &copy; {new Date().getFullYear()} Clear View
               </p>
             </div>
           </div>

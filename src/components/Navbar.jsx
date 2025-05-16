@@ -5,8 +5,6 @@ import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import RegisterTypeDialog from "./RegisterTypeDialog";
 import { Button } from './ui/button';
-import { div } from '@tensorflow/tfjs';
-import { onAuthStateChanged } from "firebase/auth";
 
 function Navbar() {
   
@@ -23,38 +21,43 @@ function Navbar() {
   };
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      if (currentUser) {
         setIsAuthenticated(true);
         try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists() && userDoc.data().role === "admin") {
-            setUser({ id: userDoc.id, ...userDoc.data() });
-            setIsAdmin(true);
+          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          if (userDoc.exists()) {
+            const userData = { id: userDoc.id, ...userDoc.data() };
+            setUser(userData);
+
+            if (userData.role === "admin") {
+              setIsAdmin(true);
+            } 
+            else {
+              setIsAdmin(false);
+            }
           } 
-          else if (userDoc.exists() && userDoc.data().role === "ngo") {
-            setUser({ id: userDoc.id, ...userDoc.data() }); 
-            setIsAdmin(false);
-          }
           else {
-            setUser({ id: userDoc.id, ...userDoc.data() });
+            setUser({ uid: currentUser.uid });
             setIsAdmin(false);
           }
         } 
         catch (error) {
-          console.error("Error checking admin status:", error);
+          console.error("Error checking user role:", error);
+          setUser({ uid: currentUser.uid });
           setIsAdmin(false);
         }
       } 
       else {
         setIsAuthenticated(false);
         setIsAdmin(false);
+        setUser(null);
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [auth, db]);
+  }, []);
 
   const logout = async () => {
     try {
@@ -68,120 +71,70 @@ function Navbar() {
 
   if (loading) {
     return (
-      <header className="bg-[#1A1F2C] text-white py-4 px-6 md:px-12">
+      <header className="bg-slate-900/90 backdrop-blur-md text-slate-200 py-3 sm:py-4 px-6 md:px-12 shadow-lg border-b border-slate-700/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <img src="/logo.svg" alt="Logo" className="h-8 w-8" />
-            <span className="font-bold text-xl">Clear View</span>
+          <div className="flex items-center space-x-3">
+            <img src="/logo.svg" alt="Logo" className="h-8 w-8 sm:h-9 sm:w-9 animate-pulse" />
+            <span className="font-semibold text-xl sm:text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-green-400">
+              Clear View
+            </span>
           </div>
+          <div className="h-6 w-24 bg-slate-700 rounded-md animate-pulse"></div>
         </div>
       </header>
     );
   }
 
+  const navLinkClasses = (path) => 
+    `font-medium text-slate-300 hover:text-emerald-300 transition-colors duration-200 ease-in-out relative group px-2 py-1
+     ${isActive(path) ? "text-emerald-300 after:w-2/3" : "after:w-0 after:group-hover:w-2/3"}
+     after:content-[''] after:absolute after:left-1/2 after:-translate-x-1/2 after:bottom-[-2px] after:h-[2px] after:bg-emerald-400 after:transition-all after:duration-300 after:rounded-full`;
+
   return (
     <>
 
-      <header className="bg-[#1A1F2C] text-white py-4 px-6 md:px-12">
+      <header className="bg-slate-900/90 backdrop-blur-md text-slate-200 py-3 sm:py-4 px-6 md:px-12 shadow-lg border-b border-slate-700/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          {!isAuthenticated && (
-            <Link to="/" className="flex items-center space-x-2">
-              <img
-                src="/logo.svg"
-                alt="Logo"
-                className="h-8 w-8"
-              />
-              <span className="font-bold text-xl">Clear View</span>
-            </Link>
-          )}
-          {isAuthenticated && isAdmin && (
-            <Link to="/admin" className="flex items-center space-x-2">
-              <img
-                src="logo.svg"
-                alt="Logo"
-                className="h-8 w-8"
-              />
-              <span className="font-bold text-xl">Clear View</span>
-            </Link>
-          )}
-          {isAuthenticated && !isAdmin && (
-            <Link to={`/user-dashboard/${user.uid}`} className="flex items-center space-x-2">
-              <img
-                src="logo.svg"
-                alt="Logo"
-                className="h-8 w-8"
-              />
-              <span className="font-bold text-xl">Clear View</span>
-            </Link>
-          )}
+          <Button className="flex items-center space-x-3 cursor-pointer">
+            <img
+              src="/logo.svg"
+              alt="Logo"
+              className="h-8 w-8 sm:h-9 sm:w-9"
+            />
 
-          <nav className="hidden md:flex items-center space-x-8">
-            {isAuthenticated && !isAdmin && (
-              <Link
-                to={`/user-dashboard/${user.uid}`}
-                className={`hover:text-[#F2FCE2] transition-colors ${
-                  isActive(`/user-dashboard/${user.uid}`) ? "text-[#6B8E23] font-semibold" : ""
-                }`}
-              >
-                Dashboard
-              </Link>
-            )}
+            <span className="font-semibold text-xl sm:text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-green-400">
+              Clear View
+            </span>
+          </Button>
+
+          <nav className="hidden md:flex items-center space-x-5 lg:space-x-7">
+            {!isAuthenticated && (
+              <>
+                <Link to="/map-view" className={navLinkClasses("/map-view")}>Map</Link>
+                <Link to="/report" className={navLinkClasses("/report")}>Report</Link>
+              </>
+            )}   
             {isAuthenticated && isAdmin && (
-              <Link
-                to="/admin"
-                className={`hover:text-[#F2FCE2] transition-colors ${
-                  isActive("/admin") ? "text-[#6B8E23] font-semibold" : ""
-                }`}
-              >
-                Dashboard
-              </Link>
+              <>
+                <Link to="/admin" className={navLinkClasses("/admin")}>Dashboard</Link>
+                <Link to="/map-view" className={navLinkClasses("/map-view")}>Map</Link>
+                <Link to="/ngo-invite" className={navLinkClasses("/ngo-invite")}>NGO Invite</Link>
+                <Link to="/leaderboard" className={navLinkClasses("/leaderboard")}>Leaderboard</Link>
+              </>
             )}
-
-            <Link
-              to="/map-view"
-              className={`hover:text-[#F2FCE2] transition-colors ${
-                isActive("/map-view") ? "text-[#6B8E23] font-semibold" : ""
-              }`}
-            >
-              Map
-            </Link>
-            {!isAdmin && (
-              <Link
-                to="/report"
-                className={`hover:text-[#F2FCE2] transition-colors ${
-                  isActive("/report") ? "text-[#6B8E23] font-semibold" : ""
-                }`}
-              >
-                Report
-              </Link>
-            )}
-            {isAuthenticated && isAdmin && (
-              <Link
-                to="/ngo-invite"
-                className={`hover:text-[#F2FCE2] transition-colors ${
-                  isActive("/ngo-invite") ? "text-[#6B8E23] font-semibold" : ""
-                }`}
-              >
-                NGO Invite
-              </Link>
-            )}
-
-            {isAuthenticated && (
-              <Link
-                to="/leaderboard"
-                className={`hover:text-[#F2FCE2] transition-colors ${
-                  isActive("/leaderboard") ? "text-[#6B8E23] font-semibold" : ""
-                }`}
-              >
-                Leaderboard
-              </Link>
+            {isAuthenticated && !isAdmin && user?.uid && (
+              <>
+                <Link to={`/user-dashboard/${user.id}`} className={navLinkClasses(`/user-dashboard/${user.id}`)}>Dashboard</Link>
+                <Link to="/map-view" className={navLinkClasses("/map-view")}>Map</Link>
+                <Link to="/report" className={navLinkClasses("/report")}>Report</Link>
+                <Link to="/leaderboard" className={navLinkClasses("/leaderboard")}>Leaderboard</Link>
+              </>
             )}
           </nav>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3 sm:space-x-4">
             {isAuthenticated ? (
               <button
-                variant="ghost"
-                className="text-white hover:text-[#F2FCE2]"
+                className="font-medium text-slate-300 hover:text-emerald-300 px-3 py-2 rounded-lg hover:bg-slate-700/70 transition-all duration-200"
                 onClick={logout}
               >
                 Logout
@@ -189,19 +142,18 @@ function Navbar() {
             ) : (
               <>
                 <Link to="/login">
-                  <button
-                    variant="ghost"
-                    className="text-white hover:text-[#F2FCE2]"
+                  <div
+                    className="login text-slate-200"
                   >
                     Login
-                  </button>
+                  </div>
                 </Link>
-                <Button 
-                  className="bg-[#6B8E23] hover:bg-[#556B2F] text-white rounded-full px-6"
+                <div
+                  className="logout"
                   onClick={() => setRegisterDialogOpen(true)}
                 >
                   Get Started
-                </Button>
+                </div>
               </>
             )}
           </div>
@@ -213,6 +165,68 @@ function Navbar() {
           isOpen={registerDialogOpen}
           onOpenChange={setRegisterDialogOpen}
         />
+
+      
+      <style jsx>
+        {`
+
+      .login, .logout {
+        padding: 0.55rem 1.35rem;
+        border-radius: 50px;
+        font-weight: 500;
+        transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border: 1.5px solid transparent;
+        cursor: pointer;
+        display: inline-block;
+        text-align: center;
+        text-decoration: none;
+        line-height: 1.4;
+        white-space: nowrap;
+      }
+
+
+
+      .login {
+        background-color: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.15);
+        color: #D1D5DB;
+      }
+
+
+
+      .login:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: #6B8E23;
+        color: #F0FFF0;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(107, 142, 35, 0.1);
+      }
+
+
+
+      .logout {
+        background-image: linear-gradient(100deg,rgb(84, 175, 54), #86A364);
+        color: white;
+        box-shadow: 0 4px 12px rgba(148, 180, 85, 0.65), 0 1px 3px rgba(0,0,0,0.1);
+        border: none;
+      }
+
+
+
+      .logout:hover {
+        background-image: linear-gradient(100deg, #556B2F, #6B8E23);
+        transform: translateY(-1.5px) scale(1.02);
+        box-shadow: 0 6px 18px rgba(85, 107, 47, 0.3), 0 2px 5px rgba(0,0,0,0.15);
+      }
+
+      .logout:active {
+        transform: translateY(0px) scale(0.98);
+        box-shadow: 0 2px 8px rgba(85, 107, 47, 0.25);
+      }
+
+      `}
+
+    </style>
     </>
     
   )
