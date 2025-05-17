@@ -1,39 +1,37 @@
-import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, GeoJSON } from "react-leaflet";
-import L from "leaflet";
-import { getAllReports } from "../utils/services";
-import { useToast } from "../components/ui/use-toast";
-import { Card, CardContent } from "../components/ui/card";
-import "leaflet/dist/leaflet.css";
-
-import { biodiversityHotspotsData } from "../components/biodiversityHotspots";
-import * as turf from "@turf/turf";
-import NavBar from "../components/Navbar";
-import Footer from "../components/Footer";
-import MobileBottomNav from "../components/MobileBottomNav";
+import { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, GeoJSON } from 'react-leaflet';
+import L from 'leaflet';
+import { getAllReports } from '../utils/services';
+import { useToast } from '../components/ui/use-toast';
+import { Card, CardContent } from '../components/ui/card';
+import 'leaflet/dist/leaflet.css';
+import { biodiversityHotspotsData } from '../components/biodiversityHotspots';
+import * as turf from '@turf/turf';
+import NavBar from '../components/Navbar';
+import Footer from '../components/Footer';
+import MobileBottomNav from '../components/MobileBottomNav';
 
 const MAP_CENTER = [20.5937, 78.9629];
 const INITIAL_ZOOM = 5;
-const POLLUTION_THRESHOLD = 1; // threshold for color change
-const HOT_HOTSPOT_COLOR = "#A50026";
+const POLLUTION_THRESHOLD = 1;  // threshold for color change
+const HOT_HOTSPOT_COLOR = '#A50026';
 const HOT_HOTSPOT_OPACITY = 0.7;
 
 // Create custom icons
 const createCustomIcon = (color) => {
   return L.icon({
     iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-    shadowUrl:
-      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
-    shadowSize: [41, 41],
+    shadowSize: [41, 41]
   });
 };
 
-const pendingIcon = createCustomIcon("yellow");
-const approvedIcon = createCustomIcon("red");
-const resolvedIcon = createCustomIcon("green");
+const pendingIcon = createCustomIcon('yellow');
+const approvedIcon = createCustomIcon('red');
+const resolvedIcon = createCustomIcon('green');
 
 const MapView = () => {
   const [reports, setReports] = useState([]);
@@ -49,30 +47,25 @@ const MapView = () => {
         setReports(fetchedReports);
 
         // Process biodiversity hotspots data
-        const processed = biodiversityHotspotsData.features.map((hotspot) => {
+        const processed = biodiversityHotspotsData.features.map(hotspot => {
           try {
             let hotspotPolygon;
-            if (hotspot.geometry.type === "MultiPolygon") {
+            if (hotspot.geometry.type === 'MultiPolygon') {
               // For MultiPolygon, create a union of all polygons
-              hotspotPolygon = turf.union(
-                ...hotspot.geometry.coordinates.map((coords) =>
-                  turf.polygon(coords)
-                )
-              );
+              hotspotPolygon = turf.union(...hotspot.geometry.coordinates.map(coords => 
+                turf.polygon(coords)
+              ));
             } else {
               // For single Polygon
               hotspotPolygon = turf.polygon(hotspot.geometry.coordinates);
             }
 
-            const reportsInHotspot = fetchedReports.filter((report) => {
+            const reportsInHotspot = fetchedReports.filter(report => {
               try {
-                const point = turf.point([report.longitude, report.latitude]);
+                const point = turf.point([report.location.longitude, report.location.latitude]);
                 return turf.booleanPointInPolygon(point, hotspotPolygon);
               } catch (err) {
-                console.warn(
-                  `Error processing report point for hotspot ${hotspot.properties.name}:`,
-                  err
-                );
+                console.warn(`Error processing report point for hotspot ${hotspot.properties.name}:`, err);
                 return false;
               }
             });
@@ -82,22 +75,13 @@ const MapView = () => {
               properties: {
                 ...hotspot.properties,
                 reportCount: reportsInHotspot.length,
-                pendingCount: reportsInHotspot.filter(
-                  (r) => r.status === "pending"
-                ).length,
-                approvedCount: reportsInHotspot.filter(
-                  (r) => r.status === "approved"
-                ).length,
-                resolvedCount: reportsInHotspot.filter(
-                  (r) => r.status === "resolved"
-                ).length,
-              },
+                pendingCount: reportsInHotspot.filter(r => r.status === 'pending').length,
+                approvedCount: reportsInHotspot.filter(r => r.status === 'approved').length,
+                resolvedCount: reportsInHotspot.filter(r => r.status === 'resolved').length
+              }
             };
           } catch (err) {
-            console.warn(
-              `Error processing hotspot ${hotspot.properties.name}:`,
-              err
-            );
+            console.warn(`Error processing hotspot ${hotspot.properties.name}:`, err);
             return {
               ...hotspot,
               properties: {
@@ -105,8 +89,8 @@ const MapView = () => {
                 reportCount: 0,
                 pendingCount: 0,
                 approvedCount: 0,
-                resolvedCount: 0,
-              },
+                resolvedCount: 0
+              }
             };
           }
         });
@@ -139,16 +123,16 @@ const MapView = () => {
     }
     // Otherwise return default colors for each region
     switch (feature.properties.name) {
-      case "The Himalayas":
-        return "#008000";
-      case "Western Ghats":
-        return "#FFFF00";
-      case "Indo-Burma Region (Indian Part)":
-        return "#FF0000";
-      case "Sundaland (Andaman & Nicobar Islands)":
-        return "#C71585";
+      case 'The Himalayas':
+        return '#008000';
+      case 'Western Ghats':
+        return '#FFFF00';
+      case 'Indo-Burma Region (Indian Part)':
+        return '#FF0000';
+      case 'Sundaland (Andaman & Nicobar Islands)':
+        return '#C71585';
       default:
-        return "#90EE90";
+        return '#90EE90';
     }
   };
 
@@ -156,12 +140,9 @@ const MapView = () => {
     fillColor: getHotspotColor(feature),
     weight: 2,
     opacity: 1,
-    color: "red",
-    dashArray: "3",
-    fillOpacity:
-      feature.properties.reportCount > POLLUTION_THRESHOLD
-        ? HOT_HOTSPOT_OPACITY
-        : 0.5,
+    color: 'red',
+    dashArray: '3',
+    fillOpacity: feature.properties.reportCount > POLLUTION_THRESHOLD ? HOT_HOTSPOT_OPACITY : 0.5,
   });
 
   const onEachHotspotFeature = (feature, layer) => {
@@ -170,7 +151,7 @@ const MapView = () => {
       if (feature.properties.description) {
         popupContent += `<p style="font-size: 0.9em;">${feature.properties.description}</p>`;
       }
-      if (typeof feature.properties.reportCount === "number") {
+      if (typeof feature.properties.reportCount === 'number') {
         popupContent += `<p style="font-size: 0.9em; margin-top: 5px;">Pollution Reports: <strong>${feature.properties.reportCount}</strong></p>`;
         popupContent += `<p style="font-size: 0.9em;">Pending: ${feature.properties.pendingCount}</p>`;
         popupContent += `<p style="font-size: 0.9em;">Approved: ${feature.properties.approvedCount}</p>`;
@@ -178,19 +159,19 @@ const MapView = () => {
       }
       layer.bindPopup(popupContent);
 
-      layer.bindTooltip(
-        `${feature.properties.name} (Reports: ${
-          feature.properties.reportCount || 0
-        })`,
-        {
-          permanent: false,
-          direction: "auto",
-        }
-      );
+      layer.bindTooltip(`${feature.properties.name} (Reports: ${feature.properties.reportCount || 0})`, {
+        permanent: false,
+        direction: 'auto'
+      });
     }
   };
 
-  const hotspotLegendColors = ["#008000", "#FFFF00", "#FF0000", "#C71585"];
+  const hotspotLegendColors = [
+    '#008000',
+    '#FFFF00',
+    '#FF0000',
+    '#C71585',
+  ];
 
   if (loading) {
     return (
@@ -211,53 +192,42 @@ const MapView = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <NavBar />
-
+      
       <main className="flex-grow py-6 px-6 md:px-12 bg-gradient-to-br from-[#101c1a] via-[#1a2e2b] to-[#0e1a17] dark relative overflow-hidden">
         <div className="absolute inset-0 bg-white/5 dark:bg-black/30 backdrop-blur-2xl z-0 pointer-events-none" />
         <div className="max-w-7xl mx-auto relative z-10 animate-fade-in animate-delay-100">
-          <h1 className="text-3xl font-bold mb-6 text-white drop-shadow-lg">
-            Pollution Map
-          </h1>
-
+          <br />
+          <h1 className="text-3xl font-bold mb-6 text-white drop-shadow-lg">Pollution Map</h1>
+          <br />
           <Card className="mb-8 overflow-hidden glass saas-shadow bg-white/5 border-white/10 animate-slide-up animate-delay-200">
             <CardContent className="p-0">
               <MapContainer
                 center={MAP_CENTER}
                 zoom={INITIAL_ZOOM}
-                style={{ height: "70vh", width: "100%" }}
+                style={{ height: '70vh', width: '100%' }}
               >
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
-
+                
                 {reports.map((report) => {
-                  const markerIcon =
-                    report.status === "resolved"
-                      ? resolvedIcon
-                      : report.status === "approved"
-                      ? approvedIcon
-                      : pendingIcon;
+                  const markerIcon = report.status === 'resolved' ? resolvedIcon :
+                                   report.status === 'approved' ? approvedIcon :
+                                   pendingIcon;
 
                   return (
                     <Marker
                       key={report.id}
-                      position={[
-                        report.location.latitude,
-                        report.location.longitude,
-                      ]}
+                      position={[report.location.latitude, report.location.longitude]}
                       icon={markerIcon}
                     >
                       <Popup>
                         <div className="popup-content">
                           <h3 className="font-bold">{report.type}</h3>
                           <p className="text-sm">{report.description}</p>
-                          <p className="text-xs mt-2">
-                            Status: {report.status}
-                          </p>
-                          <p className="text-xs">
-                            Reported by: {report.user_id}
-                          </p>
+                          <p className="text-xs mt-2">Status: {report.status}</p>
+                          <p className="text-xs">Reported by: {report.user_id}</p>
                         </div>
                       </Popup>
                     </Marker>
@@ -278,78 +248,45 @@ const MapView = () => {
               <h2 className="text-xl font-bold text-gray-200 mb-2">
                 Biodiversity Hotspots
                 <span className="text-sm font-normal text-gray-400 ml-2">
-                  (Regions turn{" "}
-                  <span
-                    style={{ color: HOT_HOTSPOT_COLOR, fontWeight: "bold" }}
-                  >
-                    dark red
-                  </span>{" "}
-                  if pollution reports ≥ {POLLUTION_THRESHOLD})
+                  (Regions turn <span style={{color: HOT_HOTSPOT_COLOR, fontWeight: 'bold'}}>dark red</span> if pollution reports ≥ {POLLUTION_THRESHOLD})
                 </span>
               </h2>
             </div>
-
+            
             {biodiversityHotspotsData.features.map((feature, idx) => (
-              <div
-                key={feature.properties.name}
-                className="modern-glass-card animate-slide-up"
-                style={{ animationDelay: `${300 + idx * 100}ms` }}
-              >
+              <div key={feature.properties.name} className="modern-glass-card animate-slide-up" style={{animationDelay: `${300 + idx * 100}ms`}}>
                 <div className="modern-card-content">
                   <div className="modern-card-header">
-                    <span
-                      className="modern-card-dot"
-                      style={{
-                        backgroundColor:
-                          hotspotLegendColors[
-                            idx % hotspotLegendColors.length
-                          ] || "#CCCCCC",
-                      }}
-                    />
-                    <h3 className="modern-card-title">
-                      {feature.properties.name}
-                    </h3>
+                    <span className="modern-card-dot" style={{backgroundColor: hotspotLegendColors[idx % hotspotLegendColors.length] || '#CCCCCC'}} />
+                    <h3 className="modern-card-title">{feature.properties.name}</h3>
                   </div>
-                  <p className="modern-card-desc">
-                    {feature.properties.description}
-                  </p>
+                  <p className="modern-card-desc">{feature.properties.description}</p>
                 </div>
               </div>
             ))}
 
             <div className="col-span-full mt-6 mb-2">
-              <h2 className="text-xl font-bold text-gray-200 mb-2">
-                Pollution Types
-              </h2>
+              <h2 className="text-xl font-bold text-gray-200 mb-2">Pollution Types</h2>
             </div>
-
+            
             <div className="modern-glass-card animate-slide-up animate-delay-700">
               <div className="modern-card-content">
                 <h3 className="modern-card-title mb-2">Air Pollution</h3>
-                <p className="modern-card-desc">
-                  Includes reports of smoke, factory emissions, and other air
-                  quality concerns.
-                </p>
+                <p className="modern-card-desc">Includes reports of smoke, factory emissions, and other air quality concerns.</p>
               </div>
             </div>
-
+            
             <div className="modern-glass-card animate-slide-up animate-delay-800">
               <div className="modern-card-content">
                 <h3 className="modern-card-title mb-2">Water Pollution</h3>
-                <p className="modern-card-desc">
-                  Includes reports of contaminated water bodies, industrial
-                  discharge, and sewage issues.
-                </p>
+                <p className="modern-card-desc">Includes reports of contaminated water bodies, industrial discharge, and sewage issues.</p>
               </div>
             </div>
-
+            
             <div className="modern-glass-card animate-slide-up animate-delay-900">
               <div className="modern-card-content">
                 <h3 className="modern-card-title mb-2">Waste Dumping</h3>
-                <p className="modern-card-desc">
-                  Includes reports of illegal waste disposal, garbage
-                  accumulation, and plastic pollution.
-                </p>
+                <p className="modern-card-desc">Includes reports of illegal waste disposal, garbage accumulation, and plastic pollution.</p>
               </div>
             </div>
           </div>
@@ -358,6 +295,7 @@ const MapView = () => {
 
       <MobileBottomNav />
       <Footer />
+      
 
       <style>{`
         .animate-delay-100 { animation-delay: 100ms; }

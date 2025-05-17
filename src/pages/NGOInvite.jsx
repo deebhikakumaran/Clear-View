@@ -4,21 +4,8 @@ import { Button } from "../components/ui/button";
 import { toast } from "sonner";
 import { auth, db } from "../config/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../components/ui/table";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -157,6 +144,7 @@ function NGOInvite() {
           <h1 className="text-3xl font-bold mb-6 text-white drop-shadow-lg">
             NGO Verification
           </h1>
+          
           <br />
 
           <div className="modern-glass-card mb-8 animate-slide-up animate-delay-200">

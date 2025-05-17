@@ -1,7 +1,7 @@
 # 🌍 Clear View – Community-Powered Pollution Reporting Platform
 
 [![Demo Video](https://img.shields.io/badge/Watch-Demo%20Video-blue?style=for-the-badge)](https://drive.google.com/file/d/18UcGIUkUaIaakoNc-T00s3mGGEgI5bQ2/view?usp=sharing)
-[![Live Site](https://img.shields.io/badge/Visit-Deployed%20App-brightgreen?style=for-the-badge)](https://clearvieweco.netlify.app/)
+[![Live Site](https://img.shields.io/badge/Visit-Deployed%20App-brightgreen?style=for-the-badge)](https://clearview360.netlify.app/)
 
 > Empowering communities to report, visualize, and act on environmental pollution – starting with India’s invisible informal industry emissions.
 
@@ -19,7 +19,7 @@ Unseen pollution from informal industries across India continues to contaminate 
 
 ---
 
-## ⚡ Key Features (Hackathon MVP – Built in 24 Hours)
+## ⚡ Key Features (Hackathon MVP – Built under 72 Hours)
 
 - 📸 **Simple Reporting Interface**: Submit pollution reports via a mobile-friendly form. Auto-captures geolocation. Supports image upload.
 - 🗺️ **Geotagged Hotspot Map**: Displays reports on a real-time, interactive Leaflet map.
@@ -37,21 +37,22 @@ Unseen pollution from informal industries across India continues to contaminate 
 
 ## 📱 Screenshots
 
-| Login | Register | Report |
-|-------|----------|--------|
-| ![Login](./snips/login.png) | ![Register](./snips/register.png) | ![Report](./snips/report.png) |
-
-| Map | User Dashboard | Admin Dashboard |
-|-----|----------------|-----------------|
-| ![Map](./snips/map.png) | ![User](./snips/user.png) | ![Admin](./snips/admin.png) |
-
-| NGO Dashboard | Leaderboard | Landing Page 1 |
+| Home | About | Manual |
 |---------------|-------------|----------------|
-| ![NGO](./snips/ngo.png) | ![Leaderboard](./snips/leaderboard.png) | ![Landing 1](./snips/land.png) |
+| ![Home](./snips/home.png) | ![About](./snips/about.png) | ![Manual](./snips/manual.png) |
 
-| Landing Page 2 |
-|----------------|
-| ![Landing 2](./snips/land2.png) |
+| Login | Register | Contribute |
+|-------|----------|--------|
+| ![Login](./snips/login.png) | ![Register](./snips/register.png) | ![Contribute](./snips/contribute.png) |
+
+| User Dashboard | NGO Dashboard | Admin Dashboard |
+|---------------|-------------|----------------|
+| ![User](./snips/user.png) | ![NGO](./snips/ngo.png) | ![Admin](./snips/admin.png) |
+
+| Map | Report | Leaderboard |
+|-----|----------------|-----------------|
+| ![Map](./snips/map.png) | ![Report](./snips/report.png) | ![Leaderboard](./snips/leaderboard.png) |
+
 
 ---
 
@@ -63,7 +64,7 @@ Unseen pollution from informal industries across India continues to contaminate 
 
 ## 🚀 Live App
 
-🌐 [Visit the Deployed Site](https://your-deployed-site-url.com)
+🌐 [Visit the Deployed Site](https://clearview360.netlify.app/)
 
 ---
 
@@ -74,15 +75,15 @@ Unseen pollution from informal industries across India continues to contaminate 
 - [React](https://react.dev/)
 - [Vite](https://vitejs.dev/)
 - [Tailwind CSS](https://tailwindcss.com/)
-- [Leaflet.js](https://leafletjs.com/) for maps
+- [Leaflet.js](https://leafletjs.com/) - For maps
 
 **Backend / Infra:**
 
 - [Firebase Authentication](https://firebase.google.com/docs/auth)
-- [Cloud Firestore](https://firebase.google.com/products/firestore) for data storage
-- [Firebase Hosting](https://firebase.google.com/products/hosting)
+- [Cloudinary](https://cloudinary.com/) - For data storage
+- [Netlify Hosting](https://www.netlify.com/)
 
-**AI Integration:**
+**ML Integration:**
 
 - [TensorFlow.js](https://www.tensorflow.org/js) with MobileNet for pollution image classification
 
@@ -90,21 +91,35 @@ Unseen pollution from informal industries across India continues to contaminate 
 
 ## 📦 How to Run Locally
 
-bash
-# 1. Clone the repository
-git clone https://github.com/yourusername/clear-view.git
-cd clear-view
+Clone the repository
 
-# 2. Install dependencies
-npm install
+```bash
+  git clone https://github.com/deebhikakumaran/Clear-View.git
+```
 
-# 3. Add Firebase config
-# Replace the placeholders in /src/firebase.js with your Firebase credentials
+Navigate to the project directory
 
-# 4. Run the development server
-npm run dev
----
+```bash
+  cd Clear-View
+```
 
+Add Firebase configuration
+
+```bash
+  Replace the placeholders in /src/config/firebase.js with your Firebase credentials
+```
+
+Install dependencies
+
+```bash
+  npm install
+```
+
+Start the server
+
+```bash
+  npm run dev
+```
 
 ## 🤝 Contributing (Coming soon)
 
@@ -127,7 +142,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## 🧑‍💻 Team
 - [Atharv Khare](https://github.com/1mystic)
-- [Deebhika Kumaran](https://github.com/deebhikakumaran/Clear-View)
+- [Deebhika Kumaran](https://github.com/deebhikakumaran)
 - [Sumit Kumar](https://github.com/sumitkr2000)
 - [Bappaditya](https://github.com/Bappaditya13)
 

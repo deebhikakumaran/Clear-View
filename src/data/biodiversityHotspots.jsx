@@ -1,9 +1,3 @@
-// src/data/biodiversityHotspots.js
-
-// NOTE: These are VERY simplified and approximate polygons for demonstration.
-// You would need accurate GeoJSON data for a real application.
-// GeoJSON coordinates are [longitude, latitude]
-// The 'reportCount' property will be dynamically added by the MapView component.
 export const biodiversityHotspotsData = {
   type: 'FeatureCollection',
   features: [
@@ -12,12 +6,11 @@ export const biodiversityHotspotsData = {
       properties: {
         name: 'The Himalayas',
         description: 'A major mountain range forming a biodiversity hotspot.'
-        // reportCount will be added here dynamically
       },
       geometry: {
         type: 'Polygon',
         coordinates: [
-          [ // Outer ring
+          [ 
             [73.0, 35.0], [75.0, 36.0], [80.0, 33.0], [85.0, 30.0],
             [90.0, 28.0], [95.0, 29.0], [97.0, 28.0], [95.0, 26.0],
             [88.0, 25.0], [80.0, 27.0], [73.0, 35.0]

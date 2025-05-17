@@ -49,7 +49,7 @@ const Home = () => {
                 <div className="relative">
                   <div className="grid grid-cols-2 gap-4">
                     <img
-                      src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=500"
+                      src="./icon.png"
                       alt="UI-Image 1"
                       className="rounded-2xl shadow-lg w-full h-64 object-cover transform translate-y-8"
                     />
@@ -63,12 +63,11 @@ const Home = () => {
               </div>
             </div>
           </section>
-
           <section className="py-16 md:py-24 px-6">
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-16">
                 <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  Why Choose Ecochain?
+                  Why Choose Us?
                 </h2>
                 <p className="text-gray-600 max-w-2xl mx-auto">
                   Our community-powered platform provides the tools needed to

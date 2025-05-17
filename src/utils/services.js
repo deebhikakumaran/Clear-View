@@ -73,55 +73,6 @@ export const getLeaderboard = async () => {
   return leaderboard;
 };
 
-export const getAllReports = async () => {
-  const querySnapshot = await getDocs(collection(db, "reports"));
-
-  const reports = querySnapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
-
-  return reports;
-};
-
-
-export const incidentTypes = [
-  'Water Discharge',
-  'Air Emission',
-  'Waste Dumping',
-  'Oil Spill',
-  'Chemical Leak',
-  'Noise Pollution',
-  'Deforestation',
-  'Illegal Mining',
-  'Soil Contamination',
-  'Other'
-];
-
-export const getNGObyId = async (ngoId) => {
-  const ngoRef = doc(db, "users", ngoId);
-  const ngoSnap = await getDoc(ngoRef);
-
-  if (ngoSnap.exists()) {
-    return { id: ngoSnap.id, ...ngoSnap.data() };
-  } 
-  else {
-    console.error("Error fetching NGO details", error);
-  }
-};
-
-export const getReportById = async (reportId) => {
-  const reportRef = doc(db, "reports", reportId);
-  const reportSnap = await getDoc(reportRef);
-
-  if (reportSnap.exists()) {
-    return { id: reportSnap.id, ...reportSnap.data() };
-  } 
-  else {
-    console.error("Error fetching report details", error);
-  }
-};
-
 export const getReportsByStatus = async (status) => {
   try {
     const q = query(collection(db, "reports"), where("status", "==", status));
@@ -143,5 +94,68 @@ export const getReportsByStatus = async (status) => {
   }
 };
 
+export const getAllReports = async () => {
+  const querySnapshot = await getDocs(collection(db, "reports"));
+
+  const reports = querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  return reports;
+};
+
+export const incidentTypes = [
+  'Water Discharge',
+  'Air Emission',
+  'Waste Dumping',
+  'Oil Spill',
+  'Chemical Leak',
+  'Noise Pollution',
+  'Deforestation',
+  'Illegal Mining',
+  'Soil Contamination',
+  'Other'
+];
+
+// export const getNGObyId = async (ngoId) => {
+//   const ngoRef = doc(db, "users", ngoId);
+//   const ngoSnap = await getDoc(ngoRef);
+
+//   if (ngoSnap.exists()) {
+//     return { id: ngoSnap.id, ...ngoSnap.data() };
+//   } 
+//   else {
+//     console.error("Error fetching NGO details", error);
+//   }
+// };
+
+export const getReportById = async (reportId) => {
+  const reportRef = doc(db, "reports", reportId);
+  const reportSnap = await getDoc(reportRef);
+
+  if (reportSnap.exists()) {
+    return { id: reportSnap.id, ...reportSnap.data() };
+  } 
+  else {
+    console.error("Error fetching report details", error);
+  }
+};
+
+export const getReportsByUser = (userId) => {
+  return reports.filter(report => report.userId === userId);
+};
+
+export const submitReport = (reportData) => {
+  const id = (reports.length + 1).toString();
+  const newReport = {
+    id,
+    ...reportData,
+    status: 'Under Review',
+    date: new Date().toISOString().slice(0, 10),
+  };
+  reports.push(newReport);
+  return newReport;
+};
 
 

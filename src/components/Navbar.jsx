@@ -110,6 +110,8 @@ function Navbar() {
           <nav className="hidden md:flex items-center space-x-5 lg:space-x-7">
             {!isAuthenticated && (
               <>
+                <Link to="/" className={navLinkClasses("/")}>Home</Link>
+                <Link to="/about" className={navLinkClasses("/about")}>About</Link>
                 <Link to="/map-view" className={navLinkClasses("/map-view")}>Map</Link>
                 <Link to="/report" className={navLinkClasses("/report")}>Report</Link>
               </>
