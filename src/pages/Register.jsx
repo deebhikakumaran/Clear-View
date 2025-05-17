@@ -281,7 +281,7 @@ const Register = () => {
         </div>
       </main>
 
-      {/* <MobileBottomNav /> */}
+      <MobileBottomNav />
       <Footer />
       <style>{`
         /* General Page Animations (same as Login) */

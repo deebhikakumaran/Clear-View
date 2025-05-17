@@ -112,7 +112,7 @@ const UserDashboard = () => {
           </div>
         </main>
         <Footer />
-        {/* <MobileBottomNav /> */}
+        <MobileBottomNav />
       </div>
     );
   }
@@ -279,7 +279,7 @@ const UserDashboard = () => {
         </div>
       </main>
 
-      {/* <MobileBottomNav /> */}
+      <MobileBottomNav />
       <Footer />
       <style>{`
           /* General Animations */

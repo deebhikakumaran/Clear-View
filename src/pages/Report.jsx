@@ -538,7 +538,7 @@ const Report = () => {
         </div>
       </main>
 
-      {/* <MobileBottomNav /> */}
+      <MobileBottomNav />
       <Footer />
     </div>
   );

@@ -351,7 +351,7 @@ const Login = () => {
       `}
       </style>
 
-      {/* <MobileBottomNav /> */}
+      <MobileBottomNav />
       <Footer />
       
     </div>

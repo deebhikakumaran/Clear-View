@@ -85,25 +85,6 @@ export const getAllReports = async () => {
 };
 
 
-// export const updateReportStatus = async (reportId, newStatus) => {
-//   const reportRef = doc(db, "reports", reportId);
-
-//   try {
-//     await updateDoc(reportRef, {
-//       status: newStatus,
-//     });
-//     console.log(`Report ${reportId} status updated to ${newStatus}`);
-//     toast.success(`Report status updated to ${newStatus}`);
-//     return true;
-//   } 
-//   catch (error) {
-//     console.error("Error updating report status:", error);
-//     toast.error("Error updating report status.");
-//     return null;
-//   }
-// };
-
-
 export const incidentTypes = [
   'Water Discharge',
   'Air Emission',
@@ -141,19 +122,26 @@ export const getReportById = async (reportId) => {
   }
 };
 
-export const getReportsByUser = (userId) => {
-  return reports.filter(report => report.userId === userId);
+export const getReportsByStatus = async (status) => {
+  try {
+    const q = query(collection(db, "reports"), where("status", "==", status));
+    const querySnapshot = await getDocs(q);
+    
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        latitude: data.location?.latitude || 0,
+        longitude: data.location?.longitude || 0,
+        timestamp: data.timestamp?.toDate?.() || new Date(),
+      };
+    });
+  } catch (error) {
+    console.error(`Error fetching ${status} reports:`, error);
+    return [];
+  }
 };
 
-export const submitReport = (reportData) => {
-  const id = (reports.length + 1).toString();
-  const newReport = {
-    id,
-    ...reportData,
-    status: 'Under Review',
-    date: new Date().toISOString().slice(0, 10),
-  };
-  reports.push(newReport);
-  return newReport;
-};
+
 

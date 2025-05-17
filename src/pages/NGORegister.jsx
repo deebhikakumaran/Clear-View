@@ -172,7 +172,7 @@ const NGORegister = () => {
         points: 0,
       });
 
-      setSuccessDialogOpen(true);
+      // setSuccessDialogOpen(true);
 
       setOrgName("");
       setContactName("");
@@ -188,6 +188,7 @@ const NGORegister = () => {
       }
 
       toast.success("Registration submitted successfully!");
+      navigate(`/user-dashboard/${user.uid}`);
     } catch (error) {
       toast.error("Registration failed. Please try again.");
       console.error("NGO Registration error:", error);
@@ -554,7 +555,7 @@ const NGORegister = () => {
         </AlertDialog>
       </main>
 
-      {/* <MobileBottomNav /> */}
+      <MobileBottomNav />
       <Footer />
       <style>{`
         /* General Page Animations */
