@@ -26,7 +26,6 @@ const Report = () => {
   const [fileUpload, setFileUpload] = useState(null);
   const fileInputRef = useRef(null);
 
-  const [isImageRelevant, setIsImageRelevant] = useState(true);
   const [relevanceWarningSent, setRelevanceWarningSent] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -146,29 +145,33 @@ const Report = () => {
       const predictions = await model.classify(imgElement);
       console.log("MobileNet Predictions:", predictions);
 
-      const relevantKeywords = [
-        "pollution",
-        "waste",
-        "garbage",
-        "smoke",
-        "water",
-        "air",
-        "environment",
-        "cans",
-        "plastic bags",
-        "fog",
-      ];
+      const pollutionKeywords = {
+        "Water Discharge": ["water", "river", "lake", "sea", "ocean", "drain", "sewage", "effluent"],
+        "Air Emission": ["smoke", "smog", "fumes", "gas", "exhaust", "factory", "chimney", "haze", "fireboat"],
+        "Waste Dumping": ["trash", "garbage", "litter", "dump", "pile", "rubbish", "plastic", "cans"],
+        "Oil Spill": ["oil", "slick", "petroleum", "crude", "beach", "water"],
+        "Chemical Leak": ["chemical", "spill", "leak", "toxic", "hazardous", "liquid", "drum"],
+        "Noise Pollution": ["loud", "noise", "sound", "vibration", "traffic", "construction"],
+        "Deforestation": ["tree", "cut", "forest", "logging", "bare", "stump"],
+        "Illegal Mining": ["mine", "excavation", "digging", "pit", "earth", "dust"],
+        "Soil Contamination": ["soil", "ground", "dirt", "polluted", "waste", "chemical"],
+        "Other": ["pollution", "environment", "issue", "problem"], 
+      };
+
+      const relevantKeywords = pollutionKeywords[formData.type] || [];
+
       const isRelevant = predictions.some(
         (prediction) =>
-          prediction.probability > 0.5 &&
+          prediction.probability > 0.3 && 
           relevantKeywords.some((keyword) =>
             prediction.className.toLowerCase().includes(keyword)
           )
       );
 
-      setIsImageRelevant(isRelevant);
       return isRelevant;
-    } catch (error) {
+
+    } 
+    catch (error) {
       console.error("Error checking image relevance:", error);
       return true;
     }
@@ -222,18 +225,18 @@ const Report = () => {
 
     try {
       let uploadedUrl = "";
+      let isRelevant = false; 
 
       if (fileUpload) {
-        uploadedUrl = await handleImageUpload();
-
-        const isRelevant = await checkImageRelevance(fileUpload);
+        isRelevant = await checkImageRelevance(fileUpload, formData.type);
         if (!isRelevant && !relevanceWarningSent) {
           toast.error(
-            "The uploaded image might not be relevant to the pollution report. Please ensure it provides useful evidence."
+            "The uploaded image might not be relevant to the selected pollution type. Please ensure it provides useful evidence."
           );
           setRelevanceWarningSent(true);
-          // Give user an option to proceed or cancel in future
+          // Consider giving the user an option to proceed or cancel here
         }
+        uploadedUrl = await handleImageUpload();
       }
 
       const reportLocation = new GeoPoint(
@@ -249,7 +252,7 @@ const Report = () => {
         user_id: auth?.currentUser?.uid ?? "anonymous",
         timestamp: serverTimestamp(),
         status: "pending",
-        ...(fileUpload && !isImageRelevant && { image_relevance: false }),
+        ...(fileUpload && { image_relevance: isRelevant }),
       };
 
       console.log(reportData);
